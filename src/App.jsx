@@ -6,6 +6,7 @@ import CompanyDetail  from './components/CompanyDetail'
 import AnnouncementsFeed from './components/AnnouncementsFeed'
 import { useMarketSummary, useTopMovers, useTrades, useAnnouncements, useCompanyDetail } from './hooks/useCseData'
 import { SEED_COMPANIES } from './data/seedCompanies'
+import { LIVE_AVAILABLE } from './utils/cseApi'
 
 const NAV_TABS = ['Dashboard', 'Companies', 'Announcements']
 
@@ -15,7 +16,7 @@ export default function App() {
 
   const { data: marketData, status: marketStatus, loading: mktLoading, lastUpdated: mktUpdated, refresh: refreshMarket } = useMarketSummary()
   const { gainers, losers, loading: moversLoading } = useTopMovers()
-  const { trades, loading: tradesLoading } = useTrades()
+  const { trades, loading: tradesLoading, error: tradesError } = useTrades()
   const { announcements, loading: annLoading, lastUpdated: annUpdated, hasNew, clearNew, refresh: refreshAnn } = useAnnouncements()
   const { data: liveDetail } = useCompanyDetail(selectedCompany?.symbol)
 
@@ -32,7 +33,18 @@ export default function App() {
         lastUpdated={mktUpdated}
         onRefresh={handleRefresh}
         hasNewAnnouncements={hasNew}
+        liveUnavailable={!LIVE_AVAILABLE}
       />
+
+      {!LIVE_AVAILABLE && (
+        <div className="border-b border-cse-gold/20 bg-cse-gold/5">
+          <div className="max-w-screen-2xl mx-auto px-4 py-2 text-xs text-cse-muted">
+            <span className="text-cse-gold font-medium">Public site:</span> live CSE prices and announcements aren't available here because the CSE only serves its data to its own website.
+            Company financials, dividends and calculators work fully. For live data, run CSE Tracker on your own computer:{' '}
+            <a href="https://github.com/YashPS24/cse_tracker#live-data-on-your-own-computer" target="_blank" rel="noreferrer" className="text-cse-gold hover:underline">how ↗</a>
+          </div>
+        </div>
+      )}
 
       {/* Nav */}
       <div className="border-b border-cse-border bg-cse-navylt/50 sticky top-[57px] z-30 backdrop-blur">
@@ -63,6 +75,10 @@ export default function App() {
               losers={losers}
               loading={moversLoading}
               sectors={[]} // populated from API when available
+              liveUnavailable={!LIVE_AVAILABLE}
+              tradesOk={trades.length > 0}
+              annOk={announcements.length > 0}
+              tradesError={tradesError}
             />
 
             {/* Two-column layout: company list + announcement feed */}
@@ -93,6 +109,7 @@ export default function App() {
                   lastUpdated={annUpdated}
                   hasNew={hasNew}
                   onClearNew={clearNew}
+                  liveUnavailable={!LIVE_AVAILABLE}
                 />
               </div>
             </div>
@@ -104,7 +121,7 @@ export default function App() {
             <div className="mb-4">
               <h1 className="font-display text-2xl text-white">All Companies</h1>
               <p className="text-cse-muted text-sm mt-1">
-                {SEED_COMPANIES.length} companies with 10-year financial history. Live prices update every 5 minutes.
+                {SEED_COMPANIES.length} companies with 10-year financial history. {LIVE_AVAILABLE ? 'Live prices update every 5 minutes.' : 'Prices shown are from the built-in data (live prices work when running locally).'}
               </p>
             </div>
             <CompanyList
@@ -120,7 +137,7 @@ export default function App() {
             <div className="mb-4">
               <h1 className="font-display text-2xl text-white">Announcements & Filings</h1>
               <p className="text-cse-muted text-sm mt-1">
-                Annual reports, quarterly results, dividend declarations, and notices from CSE. Auto-refreshes every 10 minutes.
+                Annual reports, quarterly results, dividend declarations, and notices from CSE. {LIVE_AVAILABLE ? 'Auto-refreshes every 10 minutes.' : 'Available when running locally.'}
               </p>
             </div>
             <AnnouncementsFeed
@@ -129,6 +146,7 @@ export default function App() {
               lastUpdated={annUpdated}
               hasNew={hasNew}
               onClearNew={clearNew}
+              liveUnavailable={!LIVE_AVAILABLE}
             />
           </div>
         )}
