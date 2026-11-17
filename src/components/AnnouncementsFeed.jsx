@@ -78,7 +78,7 @@ function AnnouncementItem({ item }) {
   )
 }
 
-export default function AnnouncementsFeed({ announcements, loading, lastUpdated, hasNew, onClearNew }) {
+export default function AnnouncementsFeed({ announcements, loading, lastUpdated, hasNew, onClearNew, liveUnavailable }) {
   const [filter, setFilter] = useState('all')
   const [showCount, setShowCount] = useState(20)
 
@@ -141,8 +141,8 @@ export default function AnnouncementsFeed({ announcements, loading, lastUpdated,
       ) : filtered.length === 0 ? (
         <div className="py-12 text-center text-cse-muted text-sm">
           <Bell size={24} className="mx-auto mb-2 opacity-30" />
-          <div>No announcements yet</div>
-          <div className="text-xs mt-1">Auto-checks every 10 minutes</div>
+          <div>{liveUnavailable ? 'Live announcements work when running locally' : 'No announcements yet'}</div>
+          <div className="text-xs mt-1">{liveUnavailable ? 'See the latest on cse.lk' : 'Auto-checks every 10 minutes'}</div>
         </div>
       ) : (
         <>

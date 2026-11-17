@@ -6,8 +6,9 @@ import {
 import { X, TrendingUp, AlertTriangle, CheckCircle, Users, Calendar } from 'lucide-react'
 import { projectReturn, calcRiskScore, RISK_LABELS, fmtLKR, fmtPct, calcEPSGrowth } from '../utils/finance'
 import { useStockChart } from '../hooks/useCseData'
+import { LIVE_AVAILABLE } from '../utils/cseApi'
 
-const CHART_PERIODS = ['1W','1M','3M','6M','1Y','5Y']
+const CHART_PERIODS = ['1D','1W','1M','3M','6M','1Y']
 const TABS = ['Overview','Financials','Dividends','Return Calculator','Related']
 
 const tooltipStyle = {
@@ -83,9 +84,9 @@ export default function CompanyDetail({ company: c, liveDetail, onClose }) {
           </div>
           <div className="text-right">
             <div className="font-mono text-white text-2xl">LKR {Number(livePrice).toFixed(2)}</div>
-            {liveChange && (
+            {liveChange != null && (
               <div className={`font-mono text-sm ${liveChange >= 0 ? 'text-cse-up' : 'text-cse-down'}`}>
-                {liveChange >= 0 ? '+' : ''}{liveChange}%
+                {liveChange >= 0 ? '+' : ''}{Number(liveChange).toFixed(2)}%
               </div>
             )}
             <button onClick={onClose} className="btn-ghost mt-2 text-xs flex items-center gap-1 ml-auto">
@@ -160,7 +161,7 @@ export default function CompanyDetail({ company: c, liveDetail, onClose }) {
                   </ResponsiveContainer>
                 ) : (
                   <div className="h-32 flex items-center justify-center text-cse-muted text-sm">
-                    Live chart loads when market is open
+                    {LIVE_AVAILABLE ? 'No chart data for this period' : 'Live chart works when running locally'}
                   </div>
                 )}
               </div>

@@ -27,7 +27,8 @@ function MoverCard({ item, type }) {
   )
 }
 
-export default function MarketOverview({ gainers, losers, loading, sectors }) {
+export default function MarketOverview({ gainers, losers, loading, sectors, liveUnavailable, tradesOk, annOk, tradesError }) {
+  const emptyText = liveUnavailable ? 'Live data works when running locally' : 'No data — market may be closed'
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
 
@@ -46,7 +47,7 @@ export default function MarketOverview({ gainers, losers, loading, sectors }) {
             </div>
           ))
         ) : gainers.length === 0 ? (
-          <div className="text-cse-muted text-xs text-center py-4">No data — market may be closed</div>
+          <div className="text-cse-muted text-xs text-center py-4">{emptyText}</div>
         ) : (
           gainers.slice(0, 6).map((g, i) => <MoverCard key={i} item={g} type="gainer" />)
         )}
@@ -67,7 +68,7 @@ export default function MarketOverview({ gainers, losers, loading, sectors }) {
             </div>
           ))
         ) : losers.length === 0 ? (
-          <div className="text-cse-muted text-xs text-center py-4">No data — market may be closed</div>
+          <div className="text-cse-muted text-xs text-center py-4">{emptyText}</div>
         ) : (
           losers.slice(0, 6).map((l, i) => <MoverCard key={i} item={l} type="loser" />)
         )}
@@ -118,17 +119,15 @@ export default function MarketOverview({ gainers, losers, loading, sectors }) {
         </div>
         <div className="space-y-3">
           {[
-            { label: 'Trade prices',     src: 'cse.lk/api/tradeSummary',        ok: !loading },
-            { label: 'Top movers',       src: 'cse.lk/api/topGainers',          ok: !loading },
-            { label: 'Announcements',    src: 'cse.lk/api/getFinancialAnnouncement', ok: true },
-            { label: 'Market index',     src: 'cse.lk/api/marketSummery',       ok: true },
-            { label: 'Sector data',      src: 'cse.lk/api/allSectors',          ok: true },
+            { label: 'Trade prices',     src: 'cse.lk/api/tradeSummary',        ok: tradesOk },
+            { label: 'Top movers',       src: 'cse.lk/api/topGainers',          ok: !loading && (gainers.length > 0 || losers.length > 0) },
+            { label: 'Announcements',    src: 'cse.lk/api/getFinancialAnnouncement', ok: annOk },
           ].map(({ label, src, ok }) => (
             <div key={label}>
               <div className="flex items-center justify-between mb-0.5">
                 <span className="text-xs text-white">{label}</span>
                 <span className={`text-xs ${ok ? 'text-cse-up' : 'text-cse-warn'}`}>
-                  {ok ? '● Live' : '○ Loading'}
+                  {ok ? '● Live' : liveUnavailable ? '○ Local only' : tradesError ? '○ Error' : '○ Loading'}
                 </span>
               </div>
               <div className="text-xs text-cse-muted font-mono truncate">{src}</div>
@@ -136,8 +135,14 @@ export default function MarketOverview({ gainers, losers, loading, sectors }) {
           ))}
         </div>
         <div className="mt-4 pt-3 border-t border-cse-border">
-          <div className="text-xs text-cse-muted">Auto-refreshes every 5 min</div>
-          <div className="text-xs text-cse-muted mt-1">Announcements every 10 min</div>
+          {liveUnavailable ? (
+            <div className="text-xs text-cse-muted">The CSE only serves live data to its own website. Run CSE Tracker on your computer (npm run dev) to see it.</div>
+          ) : (
+            <>
+              <div className="text-xs text-cse-muted">Auto-refreshes every 5 min</div>
+              <div className="text-xs text-cse-muted mt-1">Announcements every 10 min</div>
+            </>
+          )}
         </div>
       </div>
 

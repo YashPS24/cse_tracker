@@ -49,7 +49,7 @@ export default function CompanyList({ companies, liveTrades, onSelectCompany }) 
           price:     parseFloat(t.lastTradedPrice || t.price || 0),
           change:    parseFloat(t.change || 0),
           changePct: parseFloat(t.percentageChange || 0),
-          volume:    parseInt(t.volume || 0, 10),
+          volume:    parseInt(t.sharevolume || t.volume || 0, 10),
         }
       })
     }

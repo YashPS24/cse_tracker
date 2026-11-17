@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { RefreshCw, TrendingUp, Bell, Activity } from 'lucide-react'
 
-export default function Header({ marketData, marketStatus, lastUpdated, onRefresh, hasNewAnnouncements }) {
+export default function Header({ marketData, marketStatus, lastUpdated, onRefresh, hasNewAnnouncements, liveUnavailable }) {
   const [time, setTime] = useState(new Date())
 
   useEffect(() => {
@@ -9,9 +9,11 @@ export default function Header({ marketData, marketStatus, lastUpdated, onRefres
     return () => clearInterval(id)
   }, [])
 
-  const isOpen = marketStatus?.marketStatus === 'OPEN'
-  const aspi   = marketData?.aspi  || marketData?.allSharePriceIndex
-  const sp20   = marketData?.sp20  || marketData?.snp20
+  const isOpen = !!marketStatus?.isOpen
+  const statusText = marketStatus?.text
+  const aspi   = marketData?.aspi
+  const sp20   = marketData?.sp20
+  const pct = (v) => (v == null ? null : <span className={`text-xs font-mono ${v >= 0 ? 'text-cse-up' : 'text-cse-down'}`}>{v >= 0 ? '+' : ''}{Number(v).toFixed(2)}%</span>)
   const turnover = marketData?.turnover
 
   return (
@@ -34,21 +36,21 @@ export default function Header({ marketData, marketStatus, lastUpdated, onRefres
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${isOpen ? 'pulse-dot' : 'bg-cse-muted'}`} />
             <span className={isOpen ? 'text-cse-up font-medium' : 'text-cse-muted'}>
-              Market {isOpen ? 'Open' : 'Closed'}
+              {statusText ? statusText : liveUnavailable ? 'Live data: local only' : 'Market status…'}
             </span>
           </div>
 
           {aspi && (
             <div className="hidden md:flex items-center gap-2">
               <span className="text-cse-muted text-xs">ASPI</span>
-              <span className="font-mono text-white font-medium">{Number(aspi).toLocaleString()}</span>
+              <span className="font-mono text-white font-medium">{Number(aspi).toLocaleString()}</span>{pct(marketData?.aspiChangePct)}
             </div>
           )}
 
           {sp20 && (
             <div className="hidden lg:flex items-center gap-2">
               <span className="text-cse-muted text-xs">S&P SL20</span>
-              <span className="font-mono text-white font-medium">{Number(sp20).toLocaleString()}</span>
+              <span className="font-mono text-white font-medium">{Number(sp20).toLocaleString()}</span>{pct(marketData?.sp20ChangePct)}
             </div>
           )}
 
